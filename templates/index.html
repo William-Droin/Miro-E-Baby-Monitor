@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream with Controls</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #videoStream {
+            width: 80%;
+            border: 2px solid black;
+        }
+        .gamepad {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: grid;
+            grid-template-areas: 
+                ". forward ."
+                "left . right"
+                ". backward .";
+            gap: 10px;
+        }
+        .control-btn {
+            padding: 10px;
+            background-color: #004A7F;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .forward { grid-area: forward; }
+        .backward { grid-area: backward; }
+        .left { grid-area: left; }
+        .right { grid-area: right; }
+    </style>
+</head>
+<body>
+
+<video id="videoStream" autoplay="true" src="{{ url_for('video_feed') }}"></video>
+
+<div class="gamepad">
+    <button onclick="window.location.href='/forward'" class="control-btn forward">Forward</button>
+    <button onclick="window.location.href='/left'" class="control-btn left">Left</button>
+    <button onclick="window.location.href='/right'" class="control-btn right">Right</button>
+    <button onclick="window.location.href='/backward'" class="control-btn backward">Backward</button>
+</div>
+
+</body>
+</html>
