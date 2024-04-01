@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stream with Controls</title>
+
+    <!-- Notif script -->
+    <script>
+        function fetchNotification() {
+            fetch('/get-notification')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Persons on screen:', data.message);
+                    // Display the notification message on the webpage
+                    document.getElementById('notification').textContent = data.message;
+                })
+                .catch(error => console.error('Error fetching notification:', error));
+        }
+
+        // Poll the server every 5 seconds for new notifications
+        setInterval(fetchNotification, 5000);
+    </script>
+    
+    <!-- CSS style -->
     <style>
         body, html {
             height: 100%;
@@ -44,8 +63,11 @@
 </head>
 <body>
 
-<video id="videoStream" autoplay="true" src="{{ url_for('video_feed') }}"></video>
+<!-- Miro video stream -->
+<p id="notification">No new notifications.</p>
+<img id="videoStream" autoplay="true" src="{{ url_for('video_feed') }}"></img>
 
+<!-- Control buttons -->
 <div class="gamepad">
     <button onclick="window.location.href='/forward'" class="control-btn forward">Forward</button>
     <button onclick="window.location.href='/left'" class="control-btn left">Left</button>
