@@ -24,6 +24,12 @@
     
     <!-- CSS style -->
     <style>
+        :root {
+            --btn-bg-color: #505458;
+            --btn-hover-bg-color: #363d44;
+            --btn-color: white;
+        }
+
         body, html {
             height: 100%;
             margin: 0;
@@ -31,10 +37,13 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
         }
         #videoStream {
-            width: 80%;
-            border: 2px solid black;
+            max-width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .gamepad {
             position: fixed;
@@ -48,12 +57,17 @@
             gap: 10px;
         }
         .control-btn {
-            padding: 10px;
-            background-color: #004A7F;
+            padding: 10px 20px;
+            background-color: var(--btn-bg-color);
             border: none;
-            color: white;
+            color: var(--btn-color);
             cursor: pointer;
             font-size: 16px;
+            transition: background-color 0.3s;
+            border-radius: 5px;
+        }
+        .control-btn:hover {
+            background-color: var(--btn-hover-bg-color);
         }
         .forward { grid-area: forward; }
         .backward { grid-area: backward; }
@@ -65,7 +79,7 @@
 
 <!-- Miro video stream -->
 <p id="notification">No new notifications.</p>
-<img id="videoStream" autoplay="true" src="{{ url_for('video_feed') }}"></img>
+<img id="videoStream" autoplay="true" src="{{ url_for('video_feed') }}" alt="Video Stream">
 
 <!-- Control buttons -->
 <div class="gamepad">
