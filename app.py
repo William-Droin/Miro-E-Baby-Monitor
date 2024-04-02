@@ -1,10 +1,14 @@
-from flask import Flask, Response, render_template, jsonify
+from flask import Flask, Response, render_template, jsonify, stream_with_context
 import threading
 import videoDetector
 import cv2
 import numpy as np
 import time
 from threading import Lock
+import pyaudio
+import os
+import random
+import wave
 
 # Create a lock
 people_in_room_lock = Lock()
@@ -36,6 +40,57 @@ def generate_frames():
 
 # Variable to keep track of face recognition status
 face_recognized = False
+
+def generate_wav_header(sample_rate, bits_per_sample, channels):
+    """
+    Generate a WAV header for a file with the given audio parameters.
+    Note: This is a simplified header without correct file and data chunk sizes.
+    """
+    wav_header = wave.struct.pack('<ccccIccccccccIHHIIHH',
+        b'R', b'I', b'F', b'F',
+        0,  # Placeholder for file size, to be updated later if known
+        b'W', b'A', b'V', b'E',
+        b'f', b'm', b't', b' ',
+        16,  # Size of 'fmt ' chunk
+        1,  # Audio format (1 is PCM)
+        channels,
+        sample_rate,
+        sample_rate * channels * bits_per_sample // 8,  # Byte rate
+        channels * bits_per_sample // 8,  # Block align
+        bits_per_sample,
+    ) + wave.struct.pack('<ccccI',
+        b'd', b'a', b't', b'a',
+        0  # Placeholder for data chunk size, to be updated later if known
+    )
+    return wav_header
+
+def audio_stream():
+    # Audio stream configuration
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1  # Adjusted to stereo
+    RATE = 44100
+    CHUNK = 1024
+    BITS_PER_SAMPLE = 16  # Assuming 16 bits per sample for paInt16 format
+
+    p = pyaudio.PyAudio()
+
+    # Open the live audio stream
+    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, input_device_index=0, frames_per_buffer=CHUNK)
+
+    # First, send the WAV header with the correct configuration
+    wav_header = generate_wav_header(RATE, BITS_PER_SAMPLE, CHANNELS)
+    yield wav_header
+
+    # Stream audio in chunks
+    try:
+        while True:
+            data = stream.read(CHUNK, exception_on_overflow=False)
+            yield data
+    finally:
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+
 
 # Name of the people on screen
 
@@ -109,6 +164,10 @@ def video_feed():
                         mimetype='multipart/x-mixed-replace; boundary=frame')
     else:
         return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/audio')
+def audio():
+    return Response(stream_with_context(audio_stream()), mimetype="audio/wav")
 
 # Control buttons routes
 @app.route('/forward', methods=['POST'])
